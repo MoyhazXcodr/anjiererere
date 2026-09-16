@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clipz Gank V2 - Full Features</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { blue: '#5B6EF7', green: '#00C853', gray: '#D1D5DB', dark: '#1e293b', gold: '#FFD700' }
+                    },
+                    fontFamily: { heading: ['Montserrat', 'sans-serif'], body: ['Poppins', 'sans-serif'], }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f4f7fe; overflow-x: hidden; }
+        h1, h2, h3, .font-heading { font-family: 'Montserrat', sans-serif; }
+        .tab-content { display: none; opacity: 0; transition: opacity 0.4s ease; }
+        .tab-content.active { display: block; opacity: 1; animation: slideUp 0.5s ease forwards; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .nav-btn-wrapper { transform: skewX(-15deg); transition: all 0.3s; position: relative; overflow: hidden; }
+        .nav-btn-text { transform: skewX(15deg); display: inline-block; position: relative; z-index: 2; }
+        .nav-btn-wrapper.active { background-color: white; color: #5B6EF7; }
+        .nav-btn-wrapper:not(.active) { background-color: rgba(255, 255, 255, 0.15); color: white; border: 1px solid rgba(255,255,255,0.3); }
+        .modal-overlay { display: none; opacity: 0; transition: opacity 0.3s ease; }
+        .modal-overlay.show { display: flex; opacity: 1; }
+        .toast { position: fixed; bottom: 20px; right: 20px; background: #00C853; color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; transform: translateY(100px); opacity: 0; transition: all 0.3s ease; z-index: 1000; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .badge-owner { background: linear-gradient(135deg, #1e293b, #334155); color: white; }
+        .badge-donatur { background: linear-gradient(135deg, #FFD700, #FFA500); color: #fff; }
+        .badge-member { background: #e2e8f0; color: #475569; }
+    </style>
+</head>
+<body class="text-slate-800 flex flex-col min-h-screen">
+
+    <!-- NAVBAR -->
+    <nav class="bg-brand-blue shadow-lg sticky top-0 z-50 backdrop-blur-md bg-opacity-95">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row items-center justify-between py-4 gap-4 lg:gap-0">
+                <div class="flex items-center gap-4 cursor-pointer" onclick="switchTab('home')">
+                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center font-black text-2xl text-brand-blue">L</div>
+                    <span class="text-white font-heading font-black text-2xl tracking-widest">CLIPZGANK</span>
+                </div>
+                <div class="flex overflow-x-auto w-full lg:w-auto pb-2 lg:pb-0 gap-2 md:gap-4 hide-scrollbar px-2 flex-1 justify-center">
+                    <button onclick="switchTab('home')" class="nav-btn-wrapper active px-4 py-2 min-w-[90px] text-center font-bold text-sm shrink-0" data-target="home"><span class="nav-btn-text">HOME</span></button>
+                    <button onclick="switchTab('projects')" class="nav-btn-wrapper px-4 py-2 min-w-[90px] text-center font-bold text-sm shrink-0" data-target="projects"><span class="nav-btn-text">FLM</span></button>
+                    <button onclick="switchTab('samples')" class="nav-btn-wrapper px-4 py-2 min-w-[90px] text-center font-bold text-sm shrink-0" data-target="samples"><span class="nav-btn-text">SAMPLE</span></button>
+                    <button onclick="switchTab('requests')" class="nav-btn-wrapper px-4 py-2 min-w-[90px] text-center font-bold text-sm shrink-0" data-target="requests"><span class="nav-btn-text">REQUEST</span></button>
+                    <button onclick="switchTab('membership')" class="nav-btn-wrapper px-4 py-2 min-w-[90px] text-center font-bold text-sm shrink-0" data-target="membership"><span class="nav-btn-text text-brand-gold drop-shadow-sm">VIP⭐</span></button>
+                    <!-- Tombol Admin (Hidden default) -->
+                    <button id="nav-admin" onclick="switchTab('admin')" class="nav-btn-wrapper hidden px-4 py-2 min-w-[90px] text-center font-bold text-sm shrink-0 bg-red-500/20" data-target="admin"><span class="nav-btn-text text-red-200">ADMIN ⚙️</span></button>
+                </div>
+                <div class="flex items-center" id="auth-container">
+                    <button onclick="openModal('auth-modal')" class="bg-white/20 hover:bg-white text-white hover:text-brand-blue border border-white/40 font-bold px-4 py-2 rounded-lg text-sm">🔒 LOGIN / DAFTAR</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- 1. BERANDA -->
+        <div id="home" class="tab-content active space-y-10">
+            <div class="bg-slate-900 rounded-[2rem] p-8 md:p-12 relative shadow-2xl overflow-hidden flex flex-col md:flex-row gap-8 items-center">
+                <div class="flex-1 text-center md:text-left z-10">
+                    <h1 class="font-heading font-black text-4xl md:text-6xl text-white">
+                        <span class="text-brand-green">GUDANGNYA</span><br>PARA REMIXER
+                    </h1>
+                    <p class="text-slate-300 mt-4 text-lg max-w-md">Karya FLM, Sample, Request & Komunitas terbesar.</p>
+                </div>
+                <div class="flex-1 w-full flex justify-center md:justify-end z-10">
+                    <div class="w-full max-w-sm bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+                        <h3 class="text-white font-bold text-lg mb-4 flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></span> Live Statistik</h3>
+                        <div class="space-y-3">
+                            <div class="bg-black/40 rounded-lg p-3 flex justify-between"><span class="text-slate-300 text-sm">Total File</span><span class="text-white font-black" id="stat-files">0</span></div>
+                            <div class="bg-black/40 rounded-lg p-3 flex justify-between"><span class="text-slate-300 text-sm">Total Request</span><span class="text-brand-gold font-black" id="stat-reqs">0</span></div>
+                            <div class="bg-black/40 rounded-lg p-3 flex justify-between"><span class="text-slate-300 text-sm">Server</span><span class="text-brand-blue font-bold text-xs bg-brand-blue/20 px-2 py-1 rounded">24/7 ON</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Soft Bait Membership -->
+            <div class="bg-gradient-to-r from-orange-100 to-yellow-50 border border-yellow-200 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between cursor-pointer hover:shadow-md" onclick="switchTab('membership')">
+                <div class="flex items-center gap-4">
+                    <div class="text-4xl drop-shadow-md">👑</div>
+                    <div>
+                        <h3 class="font-black text-slate-800">Capek limit download 5x sehari?</h3>
+                        <p class="text-sm text-slate-600 font-medium">Beli Role Donatur (Rp5.000) buat bebas download sepuasnya selamanya!</p>
+                    </div>
+                </div>
+                <button class="mt-4 sm:mt-0 bg-slate-800 text-white font-bold px-5 py-2 rounded-lg">Cek VIP</button>
+            </div>
+
+            <!-- Leaderboard -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                <h2 class="text-xl font-black text-slate-800 mb-4">🏆 Top Remixer (Paling Banyak Upload)</h2>
+                <div id="leaderboard-list" class="space-y-3">
+                    <div class="text-center text-slate-400 font-bold py-4">Memuat data leaderboard...</div>
+                </div>
+            </div>
+
+            <!-- Footer Social Media Links -->
+            <div class="mt-12 flex flex-col items-center justify-center gap-6 border-t border-slate-200 pt-8 pb-4">
+                <h2 class="font-heading font-black text-xl text-slate-700">Ikuti Komunitas Kami</h2>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="https://youtube.com/" target="_blank" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-transform hover:-translate-y-1 shadow-md">
+                        ▶️ YouTube Clipz Gank
+                    </a>
+                    <a href="https://whatsapp.com/channel/" target="_blank" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-transform hover:-translate-y-1 shadow-md">
+                        💬 Saluran WhatsApp
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. GUDANG FLM -->
+        <div id="projects" class="tab-content">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-black text-slate-800">Gudang FLM</h1>
+                <button onclick="checkAuthAndOpenModal('upload-flm-modal')" class="bg-brand-blue text-white font-bold px-4 py-2 rounded-lg shadow">+ FLM</button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5" id="product-grid"></div>
+        </div>
+
+        <!-- 3. GUDANG SAMPLE -->
+        <div id="samples" class="tab-content">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-black text-slate-800">Gudang Sample</h1>
+                <button onclick="checkAuthAndOpenModal('upload-sample-modal')" class="bg-brand-green text-white font-bold px-4 py-2 rounded-lg shadow">+ Sample</button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5" id="sample-grid"></div>
+        </div>
+        
+        <!-- 4. REQUEST HUB -->
+        <div id="requests" class="tab-content">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-black text-slate-800">📝 Request Hub</h1>
+                <button onclick="checkAuthAndOpenModal('add-request-modal')" class="bg-slate-800 text-white font-bold px-4 py-2 rounded-lg shadow">+ Buat Request</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5" id="request-grid">
+                <div class="col-span-full text-center text-slate-400 font-bold py-10">Memuat request...</div>
+            </div>
+        </div>
+
+        <!-- 5. MEMBERSHIP -->
+        <div id="membership" class="tab-content">
+            <div class="max-w-xl mx-auto text-center mt-10">
+                <div class="bg-white rounded-3xl p-8 border-2 border-brand-gold shadow-lg">
+                    <div class="text-6xl mb-4">💎</div>
+                    <h3 class="text-2xl font-bold text-slate-800">Role [ Donatur ]</h3>
+                    <div class="text-4xl font-black text-brand-gold my-4">Rp 5.000 <span class="text-sm text-slate-400">/ permanen</span></div>
+                    <ul class="text-left space-y-3 mb-8 font-medium text-slate-600 max-w-xs mx-auto">
+                        <li>✅ Unlimited Download (Bebas limit)</li>
+                        <li>✅ Badge emas [ Donatur ]</li>
+                        <li>✅ Prioritas dikerjain di Request Hub</li>
+                    </ul>
+                    <a href="https://wa.me/6281234567890?text=Bang%20mau%20beli%20Role%20Donatur" target="_blank" class="block w-full bg-slate-900 text-white font-bold py-4 rounded-xl hover:bg-brand-gold hover:text-slate-900 transition-colors">BELI VIA WHATSAPP</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. ADMIN DASHBOARD (Fitur Baru) -->
+        <div id="admin" class="tab-content">
+            <h1 class="text-3xl font-heading font-black text-slate-800 mb-2">Dashboard Owner</h1>
+            <p class="text-slate-500 mb-8">Atur role member (kasih akses Donatur atau tambah Admin) di sini.</p>
+            
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                <h3 class="font-bold text-lg mb-4 text-slate-800">Daftar Member Clipz Gank</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="bg-slate-100 text-slate-600">
+                            <tr>
+                                <th class="p-3 rounded-l-lg">Username</th>
+                                <th class="p-3">Email</th>
+                                <th class="p-3">Role Saat Ini</th>
+                                <th class="p-3 rounded-r-lg">Aksi (Kelola Role)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-user-list" class="divide-y divide-slate-100">
+                            <tr><td colspan="4" class="p-4 text-center text-slate-400">Memuat data member...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODALS -->
+    
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="modal-overlay fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-sm overflow-hidden modal-box scale-95">
+            <div class="bg-brand-blue text-white px-6 py-4 flex justify-between"><h3 class="font-black" id="auth-title">MASUK AKUN</h3><button onclick="closeModal('auth-modal')">X</button></div>
+            <form id="auth-form" class="p-6 space-y-4">
+                <div id="auth-error" class="hidden bg-red-100 text-red-600 text-xs font-bold p-2 rounded"></div>
+                <input type="email" id="auth-email" required placeholder="Email" class="w-full border rounded-lg px-4 py-2 outline-none">
+                <div class="relative">
+                    <input type="password" id="auth-password" required placeholder="Password" class="w-full border rounded-lg px-4 py-2 outline-none">
+                    <button type="button" onclick="togglePassword()" class="absolute right-3 top-2 text-xl">👁️</button>
+                </div>
+                <button type="submit" id="auth-submit-btn" class="w-full bg-brand-blue text-white font-bold py-3 rounded-lg">LOGIN</button>
+                <p class="text-center text-sm font-medium">Belum punya akun? <span class="text-brand-blue font-bold cursor-pointer" onclick="toggleAuthMode()">Daftar</span></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profile-modal" class="modal-overlay fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-sm modal-box scale-95 overflow-hidden">
+            <div class="bg-slate-50 border-b px-6 py-4 flex justify-between"><h3 class="font-bold">Profil</h3><button onclick="closeModal('profile-modal')">X</button></div>
+            <div class="p-6 flex flex-col items-center">
+                <img id="modal-avatar-img" src="" class="w-24 h-24 rounded-full border-4 border-slate-100 shadow-md mb-3">
+                <h2 id="modal-username" class="text-xl font-black">User</h2>
+                <span id="modal-role-badge" class="mt-1 px-3 py-1 text-xs font-bold rounded-full">[ Member ]</span>
+                <div class="text-xs text-slate-500 mt-2 font-medium bg-slate-100 px-3 py-1 rounded">Sisa Download Hari Ini: <span id="modal-quota" class="font-bold text-brand-blue">5</span></div>
+                
+                <div class="w-full mt-6 space-y-2">
+                    <button onclick="changeNamePrompt()" class="w-full bg-slate-100 hover:bg-slate-200 font-bold py-2 rounded-lg text-sm transition-colors text-slate-700">Ganti Nama</button>
+                    <button onclick="handleLogout()" class="w-full bg-red-50 text-red-600 border border-red-200 font-bold py-2 rounded-lg text-sm">LOGOUT</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Request Modal -->
+    <div id="add-request-modal" class="modal-overlay fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md modal-box scale-95 overflow-hidden">
+            <div class="bg-slate-800 text-white px-6 py-4 flex justify-between"><h3 class="font-bold">Buat Request Baru</h3><button onclick="closeModal('add-request-modal')">X</button></div>
+            <form id="add-request-form" class="p-6 space-y-4">
+                <input type="text" id="req-title" required placeholder="Judul (Cth: FLM Jedag Jedug Lagu X)" class="w-full border rounded-lg px-4 py-2 outline-none">
+                <textarea id="req-desc" required placeholder="Detail request lu..." class="w-full border rounded-lg px-4 py-2 outline-none h-24"></textarea>
+                <button type="submit" id="req-submit-btn" class="w-full bg-slate-800 text-white font-bold py-3 rounded-lg">KIRIM REQUEST</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Comments Modal -->
+    <div id="comments-modal" class="modal-overlay fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md modal-box scale-95 flex flex-col h-[80vh]">
+            <div class="bg-brand-blue text-white px-6 py-4 flex justify-between shrink-0"><h3 class="font-bold truncate max-w-[80%]" id="comments-title">Komentar</h3><button onclick="closeModal('comments-modal')">X</button></div>
+            <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50" id="comments-list">
+                <!-- Comments injected here -->
+            </div>
+            <form id="add-comment-form" class="p-4 border-t bg-white flex gap-2 shrink-0">
+                <input type="hidden" id="comment-post-id">
+                <input type="text" id="comment-text" required placeholder="Tulis komentar..." class="flex-1 border rounded-lg px-3 py-2 text-sm outline-none">
+                <button type="submit" class="bg-brand-blue text-white px-4 py-2 rounded-lg font-bold text-sm">Kirim</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Upload FLM -->
+    <div id="upload-flm-modal" class="modal-overlay fixed inset-0 z-[100] bg-slate-900/60 items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-sm modal-box scale-95 overflow-hidden">
+            <div class="bg-slate-50 border-b px-6 py-4 flex justify-between"><h3 class="font-bold">Add FLM</h3><button onclick="closeModal('upload-flm-modal')">X</button></div>
+            <form id="upload-flm-form" class="p-6 space-y-4">
+                <input type="text" id="flm-title" required placeholder="Judul Project" class="w-full border rounded-lg px-4 py-2 outline-none">
+                <input type="text" id="flm-style" required placeholder="Style / Genre (Cth: Breakbeat, Koplo)" class="w-full border rounded-lg px-4 py-2 outline-none">
+                <input type="url" id="flm-link" required placeholder="Link Download (GDrive/Mediafire)" class="w-full border rounded-lg px-4 py-2 outline-none">
+                <button type="submit" id="flm-submit-btn" class="w-full bg-brand-blue text-white font-bold py-3 rounded-lg">UPLOAD FLM</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Upload Sample -->
+    <div id="upload-sample-modal" class="modal-overlay fixed inset-0 z-[100] bg-slate-900/60 items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-sm modal-box scale-95 overflow-hidden">
+            <div class="bg-slate-50 border-b px-6 py-4 flex justify-between"><h3 class="font-bold">Add Sample</h3><button onclick="closeModal('upload-sample-modal')">X</button></div>
+            <form id="upload-sample-form" class="p-6 space-y-4">
+                <input type="text" id="sample-title" required placeholder="Nama Sample" class="w-full border rounded-lg px-4 py-2 outline-none">
+                <input type="text" id="sample-size" required placeholder="Ukuran / Size (Cth: 15 MB)" class="w-full border rounded-lg px-4 py-2 outline-none">
+                <input type="url" id="sample-link" required placeholder="Link Download" class="w-full border rounded-lg px-4 py-2 outline-none">
+                <button type="submit" id="sample-submit-btn" class="w-full bg-brand-green text-white font-bold py-3 rounded-lg">UPLOAD SAMPLE</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">Berhasil!</div>
+
+    <!-- Firebase SDK & JS Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, where, deleteDoc, doc, setDoc, getDoc, getDocs, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDtnfCOkV2yJjC-z-LOVij7uEZcAPjgErw",
+            authDomain: "clipzgank.firebaseapp.com",
+            projectId: "clipzgank",
+            storageBucket: "clipzgank.firebasestorage.app",
+            messagingSenderId: "1025375006119",
+            appId: "1:1025375006119:web:f2f4837376b7c7adbc5a82"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        const ADMIN_EMAIL = "akunpribadi112254@gmail.com"; 
+        
+        let currentUser = null;
+        let userData = null; 
+        let isLoginMode = true; 
+        
+        let allProjects = [];
+        let allSamples = [];
+        let allRequests = [];
+        let activeCommentsUnsubscribe = null;
+
+        // UI Helpers
+        window.switchTab = (tabId) => {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelectorAll('.nav-btn-wrapper').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll(`.nav-btn-wrapper[data-target="${tabId}"]`).forEach(btn => btn.classList.add('active'));
+            window.scrollTo(0,0);
+        };
+        window.openModal = (modalId) => {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('show');
+            setTimeout(() => { modal.querySelector('.modal-box').classList.replace('scale-95', 'scale-100'); }, 10);
+        };
+        window.closeModal = (modalId) => {
+            const modal = document.getElementById(modalId);
+            modal.querySelector('.modal-box').classList.replace('scale-100', 'scale-95');
+            setTimeout(() => { modal.classList.remove('show'); }, 300);
+            if(modalId === 'comments-modal' && activeCommentsUnsubscribe) {
+                activeCommentsUnsubscribe(); activeCommentsUnsubscribe = null;
+            }
+        };
+        window.showToast = (msg, err=false) => {
+            const t = document.getElementById('toast');
+            t.innerText = msg; t.style.background = err ? "#EF4444" : "#00C853";
+            t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000);
+        };
+        window.togglePassword = () => {
+            const p = document.getElementById('auth-password'); p.type = p.type === 'password' ? 'text' : 'password';
+        };
+        window.toggleAuthMode = () => {
+            isLoginMode = !isLoginMode;
+            document.getElementById('auth-title').innerText = isLoginMode ? "MASUK AKUN" : "DAFTAR AKUN";
+            document.getElementById('auth-submit-btn').innerText = isLoginMode ? "LOGIN" : "DAFTAR";
+        };
+        window.checkAuthAndOpenModal = (modalId) => {
+            if(currentUser) window.openModal(modalId); else { window.showToast("Login dulu bre!", true); window.openModal('auth-modal'); }
+        };
+
+        window.changeNamePrompt = async () => {
+            const newName = prompt("Masukkan nama baru lu (Maks. 15 karakter):", userData.username);
+            if (newName && newName.trim() !== "" && newName.length <= 15) {
+                try {
+                    await updateDoc(doc(db, "users", currentUser.uid), { username: newName.trim() });
+                    userData.username = newName.trim();
+                    document.getElementById('modal-username').innerText = userData.username;
+                    const avatarUrl = `https://ui-avatars.com/api/?name=${userData.username}&background=5B6EF7&color=fff&bold=true&size=100`;
+                    document.getElementById('modal-avatar-img').src = avatarUrl;
+                    document.querySelector('#auth-container img').src = avatarUrl;
+                    window.showToast("Nama berhasil diganti!");
+                } catch(e) { window.showToast("Gagal ganti nama: " + e.message, true); }
+            } else if (newName) {
+                window.showToast("Nama nggak valid atau kepanjangan!", true);
+            }
+        };
+
+        // ADMIN PANEL: TAMBAH ADMIN & DONATUR
+        window.loadAdminUsers = async () => {
+            try {
+                const q = query(collection(db, "users"), orderBy("createdAt", "desc"));
+                const snap = await getDocs(q);
+                let html = '';
+                snap.forEach(d => {
+                    const u = d.data();
+                    let roleBtn = '';
+                    
+                    if (currentUser && u.uid === currentUser.uid) {
+                        roleBtn = '<span class="text-xs font-bold text-slate-400">Anda (Owner)</span>';
+                    } else if (u.role === 'Member') {
+                        roleBtn = `
+                            <button onclick="changeUserRole('${d.id}', 'Donatur')" class="bg-brand-gold text-slate-900 font-bold px-2 py-1 rounded text-xs hover:bg-yellow-500 mr-1">+ Donatur</button>
+                            <button onclick="changeUserRole('${d.id}', 'Owner')" class="bg-red-500 text-white font-bold px-2 py-1 rounded text-xs hover:bg-red-600">+ Admin</button>
+                        `;
+                    } else if (u.role === 'Donatur') {
+                        roleBtn = `
+                            <button onclick="changeUserRole('${d.id}', 'Member')" class="bg-slate-300 text-slate-700 font-bold px-2 py-1 rounded text-xs hover:bg-slate-400 mr-1">- Member</button>
+                            <button onclick="changeUserRole('${d.id}', 'Owner')" class="bg-red-500 text-white font-bold px-2 py-1 rounded text-xs hover:bg-red-600">+ Admin</button>
+                        `;
+                    } else if (u.role === 'Owner') {
+                        roleBtn = `<button onclick="changeUserRole('${d.id}', 'Member')" class="bg-slate-300 text-slate-700 font-bold px-2 py-1 rounded text-xs hover:bg-slate-400">Copot Admin</button>`;
+                    }
+
+                    html += `
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="p-3 font-bold text-slate-800">${u.username}</td>
+                            <td class="p-3 text-slate-500 text-[11px]">${u.email}</td>
+                            <td class="p-3"><span class="px-2 py-1 text-[10px] uppercase font-black rounded-full bg-slate-200">${u.role}</span></td>
+                            <td class="p-3 whitespace-nowrap">${roleBtn}</td>
+                        </tr>
+                    `;
+                });
+                document.getElementById('admin-user-list').innerHTML = html;
+            } catch (e) {
+                document.getElementById('admin-user-list').innerHTML = `<tr><td colspan="4" class="p-4 text-center text-red-500">Gagal memuat: ${e.message}</td></tr>`;
+            }
+        };
+
+        window.changeUserRole = async (uid, newRole) => {
+            if (confirm(`Yakin ubah role user ini jadi ${newRole}?`)) {
+                try {
+                    await updateDoc(doc(db, "users", uid), { role: newRole });
+                    window.showToast(`Role berhasil diubah jadi ${newRole}!`);
+                    loadAdminUsers();
+                } catch(e) { window.showToast("Gagal ubah role: " + e.message, true); }
+            }
+        };
+
+        // AUTH & PROFILE
+        document.getElementById('auth-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const em = document.getElementById('auth-email').value;
+            const pw = document.getElementById('auth-password').value;
+            const err = document.getElementById('auth-error');
+            const btn = document.getElementById('auth-submit-btn');
+            btn.disabled = true; btn.innerText = "Loading..."; err.classList.add('hidden');
+
+            try {
+                if(isLoginMode) {
+                    await signInWithEmailAndPassword(auth, em, pw); window.showToast("Welcome back!");
+                } else {
+                    const res = await createUserWithEmailAndPassword(auth, em, pw);
+                    const uid = res.user.uid;
+                    const baseName = em.split('@')[0];
+                    const autoUsername = `${baseName.charAt(0).toUpperCase() + baseName.slice(1)}-${Math.floor(Math.random()*90)+10}`;
+                    const role = (em === ADMIN_EMAIL) ? "Owner" : "Member";
+                    
+                    await setDoc(doc(db, "users", uid), {
+                        uid, email: em, username: autoUsername, role, 
+                        downloadCount: 0, lastDownloadDate: "", createdAt: serverTimestamp()
+                    });
+                    window.showToast("Akun terdaftar!");
+                }
+                window.closeModal('auth-modal'); document.getElementById('auth-form').reset();
+            } catch (error) { err.innerText = error.message.replace("Firebase: ", ""); err.classList.remove('hidden'); } 
+            finally { btn.disabled = false; btn.innerText = isLoginMode ? "LOGIN" : "DAFTAR"; }
+        });
+
+        window.handleLogout = async () => {
+            if(confirm("Yakin mau logout?")) { await signOut(auth); window.closeModal('profile-modal'); window.showToast("Logout berhasil!"); }
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            const authC = document.getElementById('auth-container');
+            const adminBtn = document.getElementById('nav-admin');
+
+            if (user) {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                if(snap.exists()) userData = snap.data();
+                else userData = { username: user.email.split('@')[0], role: user.email===ADMIN_EMAIL?'Owner':'Member', downloadCount:0 };
+                
+                const avatarUrl = `https://ui-avatars.com/api/?name=${userData.username}&background=5B6EF7&color=fff&bold=true&size=100`;
+                authC.innerHTML = `<img src="${avatarUrl}" onclick="openModal('profile-modal')" class="w-10 h-10 rounded-full border-2 border-white shadow-md cursor-pointer hover:scale-110 transition-transform">`;
+                
+                document.getElementById('modal-avatar-img').src = avatarUrl;
+                document.getElementById('modal-username').innerText = userData.username;
+                const badge = document.getElementById('modal-role-badge');
+                badge.innerText = `[ ${userData.role} ]`;
+                badge.className = 'mt-1 px-3 py-1 text-[10px] uppercase font-black rounded-full text-white ' + 
+                    (userData.role==='Owner'?'bg-slate-800':userData.role==='Donatur'?'bg-brand-gold':'bg-slate-400');
+                
+                let sisa = "Unlimited";
+                if(userData.role === 'Member') {
+                    const today = new Date().toDateString();
+                    sisa = (userData.lastDownloadDate === today) ? Math.max(0, 5 - userData.downloadCount) : 5;
+                }
+                document.getElementById('modal-quota').innerText = sisa;
+
+                // Tampilkan Menu Admin jika role = Owner (bisa super admin, bisa admin tambahan)
+                if(userData.role === 'Owner') {
+                    adminBtn.classList.remove('hidden');
+                    loadAdminUsers();
+                } else {
+                    adminBtn.classList.add('hidden');
+                }
+
+            } else {
+                userData = null;
+                adminBtn.classList.add('hidden');
+                authC.innerHTML = `<button onclick="openModal('auth-modal')" class="bg-white/20 text-white font-bold px-4 py-2 rounded-lg text-sm">🔒 LOGIN</button>`;
+            }
+            renderProjectsDOM(); renderSamplesDOM(); renderRequestsDOM();
+        });
+
+        window.handleDownload = async (url) => {
+            if(!currentUser) return window.showToast("Login dulu buat download!", true);
+            if(userData.role === 'Owner' || userData.role === 'Donatur') {
+                window.open(url, '_blank'); return;
+            }
+            
+            const today = new Date().toDateString();
+            const userRef = doc(db, "users", currentUser.uid);
+            
+            try {
+                const freshSnap = await getDoc(userRef);
+                const freshData = freshSnap.data();
+                
+                if (freshData.lastDownloadDate !== today) {
+                    await updateDoc(userRef, { downloadCount: 1, lastDownloadDate: today });
+                    window.open(url, '_blank');
+                    userData.downloadCount = 1; userData.lastDownloadDate = today;
+                } else if (freshData.downloadCount < 5) {
+                    await updateDoc(userRef, { downloadCount: freshData.downloadCount + 1 });
+                    window.open(url, '_blank');
+                    userData.downloadCount = freshData.downloadCount + 1;
+                } else {
+                    window.showToast("Limit 5x download habis! Upgrade ke VIP ⭐", true);
+                }
+                
+                let sisa = Math.max(0, 5 - userData.downloadCount);
+                document.getElementById('modal-quota').innerText = sisa;
+            } catch(e) { window.showToast("Gagal proses download: " + e.message, true); }
+        };
+
+        function getBadge(role) {
+            if(role === 'Owner') return 'bg-slate-800 text-white';
+            if(role === 'Donatur') return 'bg-brand-gold text-white';
+            return 'bg-slate-200 text-slate-600';
+        }
+
+        onSnapshot(query(collection(db, "flm_projects"), orderBy("createdAt", "desc")), (snap) => {
+            allProjects = []; snap.forEach(d => allProjects.push({id: d.id, ...d.data()}));
+            renderProjectsDOM(); updateStatsAndLeaderboard();
+        });
+
+        onSnapshot(query(collection(db, "samples"), orderBy("createdAt", "desc")), (snap) => {
+            allSamples = []; snap.forEach(d => allSamples.push({id: d.id, ...d.data()}));
+            renderSamplesDOM(); updateStatsAndLeaderboard();
+        });
+        
+        onSnapshot(query(collection(db, "requests"), orderBy("createdAt", "desc")), (snap) => {
+            allRequests = []; snap.forEach(d => allRequests.push({id: d.id, ...d.data()}));
+            renderRequestsDOM(); updateStatsAndLeaderboard();
+        });
+
+        window.deleteDocData = async (col, id) => { if(confirm("Hapus file ini?")) await deleteDoc(doc(db, col, id)); }
+        window.deleteReqData = async (id) => { if(confirm("Hapus request ini?")) await deleteDoc(doc(db, "requests", id)); }
+
+        function renderProjectsDOM() {
+            const grid = document.getElementById('product-grid'); let html = '';
+            allProjects.forEach(p => {
+                let del = (currentUser && (currentUser.uid === p.userId || userData?.role === 'Owner')) ? `<button onclick="deleteDocData('flm_projects','${p.id}')" class="absolute top-2 right-2 bg-red-500 text-white w-6 h-6 rounded-full text-xs font-bold shadow z-10">X</button>` : '';
+                let badge = getBadge(p.uploaderRole || 'Member');
+                html += `
+                    <div class="bg-white border rounded-xl overflow-hidden shadow-sm flex flex-col relative">
+                        ${del}
+                        <div class="aspect-video bg-slate-100 flex items-center justify-center text-slate-300 font-black text-2xl">FLM</div>
+                        <div class="p-4 flex flex-col flex-1">
+                            <h3 class="font-bold text-sm mb-1 truncate">${p.title}</h3>
+                            <p class="text-[10px] text-brand-blue font-bold uppercase mb-2">${p.style || 'UMUM'}</p>
+                            <div class="flex items-center gap-1.5 mb-4">
+                                <span class="text-[10px] font-bold text-slate-500">${p.uploaderName||'Member'}</span>
+                                <span class="text-[8px] font-black uppercase px-1 rounded ${badge}">[${p.uploaderRole||'Member'}]</span>
+                            </div>
+                            <div class="mt-auto flex gap-2">
+                                <button onclick="openComments('${p.id}', '${p.title.replace(/'/g,"\\'")}')" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold px-3 py-2 rounded-lg text-xs flex-1">💬 Komen</button>
+                                <button onclick="handleDownload('${p.downloadUrl}')" class="bg-brand-blue hover:bg-indigo-600 text-white font-bold px-3 py-2 rounded-lg text-xs flex-1">⬇️ SEDOT</button>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+            grid.innerHTML = html || '<div class="col-span-full text-center text-slate-400">Kosong bre.</div>';
+        }
+
+        function renderSamplesDOM() {
+            const grid = document.getElementById('sample-grid'); let html = '';
+            allSamples.forEach(p => {
+                let del = (currentUser && (currentUser.uid === p.userId || userData?.role === 'Owner')) ? `<button onclick="deleteDocData('samples','${p.id}')" class="absolute top-2 right-2 bg-red-500 text-white w-6 h-6 rounded-full text-xs font-bold shadow z-10">X</button>` : '';
+                let badge = getBadge(p.uploaderRole || 'Member');
+                html += `
+                    <div class="bg-white border rounded-xl overflow-hidden shadow-sm flex flex-col relative">
+                        ${del}
+                        <div class="aspect-square bg-slate-100 flex items-center justify-center text-5xl">📦</div>
+                        <div class="p-4 flex flex-col flex-1">
+                            <h3 class="font-bold text-sm mb-1 truncate text-brand-green">${p.title}</h3>
+                            <p class="text-[10px] text-slate-500 font-bold mb-2">Size: ${p.size || '-'}</p>
+                            <div class="flex items-center gap-1.5 mb-4">
+                                <span class="text-[10px] font-bold text-slate-500">${p.uploaderName||'Member'}</span>
+                                <span class="text-[8px] font-black uppercase px-1 rounded ${badge}">[${p.uploaderRole||'Member'}]</span>
+                            </div>
+                            <div class="mt-auto flex gap-2">
+                                <button onclick="openComments('${p.id}', '${p.title.replace(/'/g,"\\'")}')" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold px-3 py-2 rounded-lg text-xs flex-1">💬 Komen</button>
+                                <button onclick="handleDownload('${p.downloadUrl}')" class="bg-brand-green hover:bg-green-600 text-white font-bold px-3 py-2 rounded-lg text-xs flex-1">⬇️ SEDOT</button>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+            grid.innerHTML = html || '<div class="col-span-full text-center text-slate-400">Kosong bre.</div>';
+        }
+        
+        function renderRequestsDOM() {
+            const grid = document.getElementById('request-grid'); let html = '';
+            allRequests.forEach(req => {
+                let del = (currentUser && (currentUser.uid === req.userId || userData?.role === 'Owner')) ? `<button onclick="deleteReqData('${req.id}')" class="text-red-500 text-xs font-bold">Hapus</button>` : '';
+                let badge = getBadge(req.requesterRole || 'Member');
+                html += `
+                    <div class="bg-white border rounded-xl p-5 shadow-sm flex flex-col">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold text-slate-800">${req.title}</h3>
+                            ${del}
+                        </div>
+                        <p class="text-xs text-slate-500 mb-4 bg-slate-50 p-3 rounded border">${req.description}</p>
+                        <div class="flex items-center gap-2 mt-auto">
+                            <span class="text-xs text-slate-400">Dari:</span>
+                            <span class="text-xs font-bold text-slate-600">${req.requesterName}</span>
+                            <span class="text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${badge}">[${req.requesterRole}]</span>
+                        </div>
+                    </div>`;
+            });
+            grid.innerHTML = html || '<div class="col-span-full text-center text-slate-400">Belum ada request masuk.</div>';
+        }
+        
+        function updateStatsAndLeaderboard() {
+            document.getElementById('stat-files').innerText = allProjects.length + allSamples.length;
+            document.getElementById('stat-reqs').innerText = allRequests.length;
+            
+            const uploaderCounts = {};
+            [...allProjects, ...allSamples].forEach(item => {
+                const name = item.uploaderName || 'Anonim';
+                if(!uploaderCounts[name]) uploaderCounts[name] = { name, count: 0, role: item.uploaderRole || 'Member' };
+                uploaderCounts[name].count++;
+            });
+            
+            const sorted = Object.values(uploaderCounts).sort((a,b) => b.count - a.count).slice(0,3);
+            let lbHtml = '';
+            const medals = ['🥇', '🥈', '🥉'];
+            
+            if(sorted.length === 0) lbHtml = '<div class="text-center text-slate-400 font-bold py-4">Belum ada data.</div>';
+            else {
+                sorted.forEach((u, i) => {
+                    let b = getBadge(u.role);
+                    lbHtml += `
+                    <div class="flex items-center justify-between bg-slate-50 p-3 rounded-lg border">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">${medals[i]||'🏅'}</span>
+                            <div>
+                                <div class="font-bold text-sm text-slate-800">${u.name}</div>
+                                <div class="text-[9px] font-black uppercase px-1 rounded inline-block ${b}">[${u.role}]</div>
+                            </div>
+                        </div>
+                        <div class="font-black text-brand-blue">${u.count} File</div>
+                    </div>`;
+                });
+            }
+            document.getElementById('leaderboard-list').innerHTML = lbHtml;
+        }
+
+        window.openComments = (postId, postTitle) => {
+            document.getElementById('comment-post-id').value = postId;
+            document.getElementById('comments-title').innerText = "Komen: " + postTitle;
+            document.getElementById('comments-list').innerHTML = '<div class="text-center text-slate-400 mt-4">Memuat...</div>';
+            openModal('comments-modal');
+            
+            const q = query(collection(db, "comments"), where("postId", "==", postId));
+            activeCommentsUnsubscribe = onSnapshot(q, (snap) => {
+                let comments = [];
+                snap.forEach(doc => comments.push({ id: doc.id, ...doc.data() }));
+                
+                comments.sort((a, b) => {
+                    let timeA = a.createdAt ? a.createdAt.toMillis() : Date.now();
+                    let timeB = b.createdAt ? b.createdAt.toMillis() : Date.now();
+                    return timeA - timeB;
+                });
+
+                let cHtml = '';
+                comments.forEach(d => {
+                    let b = getBadge(d.userRole || 'Member');
+                    let del = (currentUser && (currentUser.uid === d.userId || userData?.role === 'Owner')) 
+                        ? `<button onclick="deleteDocData('comments','${d.id}')" class="text-red-400 hover:text-red-600 text-xs font-bold">X</button>` : '';
+                    cHtml += `
+                        <div class="bg-white p-3 rounded-lg shadow-sm border text-sm relative">
+                            <div class="flex justify-between items-start mb-1">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="font-bold text-slate-700">${d.userName}</span>
+                                    <span class="text-[8px] font-black uppercase px-1 rounded ${b}">[${d.userRole}]</span>
+                                </div>
+                                ${del}
+                            </div>
+                            <p class="text-slate-600">${d.text}</p>
+                        </div>`;
+                });
+                document.getElementById('comments-list').innerHTML = cHtml || '<div class="text-center text-slate-400 mt-4 text-sm">Belum ada komentar. Jadi yang pertama!</div>';
+                const list = document.getElementById('comments-list');
+                setTimeout(() => list.scrollTop = list.scrollHeight, 100);
+            });
+        };
+        
+        document.getElementById('add-comment-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!currentUser) return window.showToast("Login dulu bre buat komen!", true);
+            const text = document.getElementById('comment-text').value;
+            const postId = document.getElementById('comment-post-id').value;
+            document.getElementById('comment-text').value = ''; 
+            try {
+                await addDoc(collection(db, "comments"), {
+                    postId, text, userId: currentUser.uid, 
+                    userName: userData.username, userRole: userData.role, createdAt: serverTimestamp()
+                });
+            } catch(e) { window.showToast("Gagal komen: " + e.message, true); }
+        });
+
+        document.getElementById('upload-flm-form').addEventListener('submit', async (e) => {
+            e.preventDefault(); const b = document.getElementById('flm-submit-btn'); b.innerText = "..."; b.disabled = true;
+            try {
+                await addDoc(collection(db, "flm_projects"), {
+                    title: document.getElementById('flm-title').value, 
+                    style: document.getElementById('flm-style').value,
+                    downloadUrl: document.getElementById('flm-link').value,
+                    userId: currentUser.uid, uploaderName: userData.username, uploaderRole: userData.role, createdAt: serverTimestamp()
+                });
+                window.closeModal('upload-flm-modal'); e.target.reset(); window.showToast('FLM dibagikan!');
+            } catch(er) { window.showToast('Error: '+er.message, true); } finally { b.innerText = "UPLOAD FLM"; b.disabled = false; }
+        });
+
+        document.getElementById('upload-sample-form').addEventListener('submit', async (e) => {
+            e.preventDefault(); const b = document.getElementById('sample-submit-btn'); b.innerText = "..."; b.disabled = true;
+            try {
+                await addDoc(collection(db, "samples"), {
+                    title: document.getElementById('sample-title').value, 
+                    size: document.getElementById('sample-size').value,
+                    downloadUrl: document.getElementById('sample-link').value,
+                    userId: currentUser.uid, uploaderName: userData.username, uploaderRole: userData.role, createdAt: serverTimestamp()
+                });
+                window.closeModal('upload-sample-modal'); e.target.reset(); window.showToast('Sample dibagikan!');
+            } catch(er) { window.showToast('Error: '+er.message, true); } finally { b.innerText = "UPLOAD SAMPLE"; b.disabled = false; }
+        });
+        
+        document.getElementById('add-request-form').addEventListener('submit', async (e) => {
+            e.preventDefault(); const b = document.getElementById('req-submit-btn'); b.innerText = "..."; b.disabled = true;
+            try {
+                await addDoc(collection(db, "requests"), {
+                    title: document.getElementById('req-title').value, description: document.getElementById('req-desc').value,
+                    userId: currentUser.uid, requesterName: userData.username, requesterRole: userData.role, status: 'pending', createdAt: serverTimestamp()
+                });
+                window.closeModal('add-request-modal'); e.target.reset(); window.showToast('Request dikirim!');
+            } catch(er) { window.showToast('Error: '+er.message, true); } finally { b.innerText = "KIRIM REQUEST"; b.disabled = false; }
+        });
+
+    </script>
+</body>
+</html>
