@@ -44,7 +44,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col lg:flex-row items-center justify-between py-4 gap-4 lg:gap-0">
                 
-                <!-- Bagian Logo yang Udah Diganti Gambar -->
+                <!-- Bagian Logo -->
                 <div class="flex items-center gap-4 cursor-pointer hover:scale-105 transition-transform" onclick="switchTab('home')">
                     <img src="https://cdn.phototourl.com/free/2026-09-16-101606be-6f48-45fc-a297-69588bf6285c.jpg" alt="Logo Clipz Gank" class="w-10 h-10 rounded-lg object-cover bg-white shadow-md">
                     <span class="text-white font-heading font-black text-2xl tracking-widest drop-shadow-md">CLIPZGANK</span>
@@ -169,7 +169,7 @@
             </div>
         </div>
 
-        <!-- 6. ADMIN DASHBOARD (Fitur Baru) -->
+        <!-- 6. ADMIN DASHBOARD -->
         <div id="admin" class="tab-content">
             <h1 class="text-3xl font-heading font-black text-slate-800 mb-2">Dashboard Owner</h1>
             <p class="text-slate-500 mb-8">Atur role member (kasih akses Donatur atau tambah Admin) di sini.</p>
@@ -267,6 +267,7 @@
             <form id="upload-flm-form" class="p-6 space-y-4">
                 <input type="text" id="flm-title" required placeholder="Judul Project" class="w-full border rounded-lg px-4 py-2 outline-none">
                 <input type="text" id="flm-style" required placeholder="Style / Genre (Cth: Breakbeat, Koplo)" class="w-full border rounded-lg px-4 py-2 outline-none">
+                <input type="url" id="flm-thumbnail" placeholder="Link Thumbnail (Opsional, contoh: link Imgur)" class="w-full border rounded-lg px-4 py-2 outline-none">
                 <input type="url" id="flm-link" required placeholder="Link Download (GDrive/Mediafire)" class="w-full border rounded-lg px-4 py-2 outline-none">
                 <button type="submit" id="flm-submit-btn" class="w-full bg-brand-blue text-white font-bold py-3 rounded-lg">UPLOAD FLM</button>
             </form>
@@ -280,6 +281,7 @@
             <form id="upload-sample-form" class="p-6 space-y-4">
                 <input type="text" id="sample-title" required placeholder="Nama Sample" class="w-full border rounded-lg px-4 py-2 outline-none">
                 <input type="text" id="sample-size" required placeholder="Ukuran / Size (Cth: 15 MB)" class="w-full border rounded-lg px-4 py-2 outline-none">
+                <input type="url" id="sample-thumbnail" placeholder="Link Thumbnail (Opsional)" class="w-full border rounded-lg px-4 py-2 outline-none">
                 <input type="url" id="sample-link" required placeholder="Link Download" class="w-full border rounded-lg px-4 py-2 outline-none">
                 <button type="submit" id="sample-submit-btn" class="w-full bg-brand-green text-white font-bold py-3 rounded-lg">UPLOAD SAMPLE</button>
             </form>
@@ -373,7 +375,7 @@
             }
         };
 
-        // ADMIN PANEL: TAMBAH ADMIN & DONATUR
+        // ADMIN PANEL
         window.loadAdminUsers = async () => {
             try {
                 const q = query(collection(db, "users"), orderBy("createdAt", "desc"));
@@ -485,7 +487,6 @@
                 }
                 document.getElementById('modal-quota').innerText = sisa;
 
-                // Tampilkan Menu Admin jika role = Owner (bisa super admin, bisa admin tambahan)
                 if(userData.role === 'Owner') {
                     adminBtn.classList.remove('hidden');
                     loadAdminUsers();
@@ -555,15 +556,23 @@
         window.deleteDocData = async (col, id) => { if(confirm("Hapus file ini?")) await deleteDoc(doc(db, col, id)); }
         window.deleteReqData = async (id) => { if(confirm("Hapus request ini?")) await deleteDoc(doc(db, "requests", id)); }
 
+        // MENDER RENDER DOM (THUMBNAIL LOGIC ADA DI SINI)
         function renderProjectsDOM() {
             const grid = document.getElementById('product-grid'); let html = '';
             allProjects.forEach(p => {
                 let del = (currentUser && (currentUser.uid === p.userId || userData?.role === 'Owner')) ? `<button onclick="deleteDocData('flm_projects','${p.id}')" class="absolute top-2 right-2 bg-red-500 text-white w-6 h-6 rounded-full text-xs font-bold shadow z-10">X</button>` : '';
                 let badge = getBadge(p.uploaderRole || 'Member');
+                
+                let imgHtml = p.thumbnailUrl 
+                    ? `<img src="${p.thumbnailUrl}" alt="${p.title}" class="w-full h-full object-cover">` 
+                    : `<div class="w-full h-full flex items-center justify-center text-slate-300 font-black text-2xl">FLM</div>`;
+
                 html += `
                     <div class="bg-white border rounded-xl overflow-hidden shadow-sm flex flex-col relative">
                         ${del}
-                        <div class="aspect-video bg-slate-100 flex items-center justify-center text-slate-300 font-black text-2xl">FLM</div>
+                        <div class="aspect-video bg-slate-100 overflow-hidden relative">
+                            ${imgHtml}
+                        </div>
                         <div class="p-4 flex flex-col flex-1">
                             <h3 class="font-bold text-sm mb-1 truncate">${p.title}</h3>
                             <p class="text-[10px] text-brand-blue font-bold uppercase mb-2">${p.style || 'UMUM'}</p>
@@ -586,10 +595,17 @@
             allSamples.forEach(p => {
                 let del = (currentUser && (currentUser.uid === p.userId || userData?.role === 'Owner')) ? `<button onclick="deleteDocData('samples','${p.id}')" class="absolute top-2 right-2 bg-red-500 text-white w-6 h-6 rounded-full text-xs font-bold shadow z-10">X</button>` : '';
                 let badge = getBadge(p.uploaderRole || 'Member');
+                
+                let imgHtml = p.thumbnailUrl 
+                    ? `<img src="${p.thumbnailUrl}" alt="${p.title}" class="w-full h-full object-cover">` 
+                    : `<div class="w-full h-full flex items-center justify-center text-5xl">📦</div>`;
+
                 html += `
                     <div class="bg-white border rounded-xl overflow-hidden shadow-sm flex flex-col relative">
                         ${del}
-                        <div class="aspect-square bg-slate-100 flex items-center justify-center text-5xl">📦</div>
+                        <div class="aspect-square bg-slate-100 overflow-hidden relative">
+                            ${imgHtml}
+                        </div>
                         <div class="p-4 flex flex-col flex-1">
                             <h3 class="font-bold text-sm mb-1 truncate text-brand-green">${p.title}</h3>
                             <p class="text-[10px] text-slate-500 font-bold mb-2">Size: ${p.size || '-'}</p>
@@ -718,6 +734,7 @@
             } catch(e) { window.showToast("Gagal komen: " + e.message, true); }
         });
 
+        // UPDATE SUBMIT: TAMBAH THUMBNAIL KE DATABASE
         document.getElementById('upload-flm-form').addEventListener('submit', async (e) => {
             e.preventDefault(); const b = document.getElementById('flm-submit-btn'); b.innerText = "..."; b.disabled = true;
             try {
@@ -725,6 +742,7 @@
                     title: document.getElementById('flm-title').value, 
                     style: document.getElementById('flm-style').value,
                     downloadUrl: document.getElementById('flm-link').value,
+                    thumbnailUrl: document.getElementById('flm-thumbnail').value || "", 
                     userId: currentUser.uid, uploaderName: userData.username, uploaderRole: userData.role, createdAt: serverTimestamp()
                 });
                 window.closeModal('upload-flm-modal'); e.target.reset(); window.showToast('FLM dibagikan!');
@@ -738,6 +756,7 @@
                     title: document.getElementById('sample-title').value, 
                     size: document.getElementById('sample-size').value,
                     downloadUrl: document.getElementById('sample-link').value,
+                    thumbnailUrl: document.getElementById('sample-thumbnail').value || "",
                     userId: currentUser.uid, uploaderName: userData.username, uploaderRole: userData.role, createdAt: serverTimestamp()
                 });
                 window.closeModal('upload-sample-modal'); e.target.reset(); window.showToast('Sample dibagikan!');
